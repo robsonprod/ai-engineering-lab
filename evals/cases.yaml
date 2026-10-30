@@ -1,0 +1,218 @@
+# Eval set for the "Ask my resume" flow (ResumeAssistant.ask).
+#
+# Source: hand-written for this lab from data/resume/resume.md (no production traffic yet).
+# Ground truth: human-written, checked against the resume. Not derived from any model output.
+#
+# Fields
+#   id        stable id (never reuse an id for a different question)
+#   tags      [category, language]. category is the main grouping in reports:
+#               in_scope    the resume answers it, with words close to the resume
+#               paraphrase  the resume answers it, but with other words (tests the embeddings)
+#               out_of_scope  unrelated to a professional profile
+#               boundary    sounds professional, but the resume does not answer it
+#   question  what the recruiter types
+#   expect    answer | refuse
+#   sections  (answer) at least one retrieved/cited chunk must contain one of these strings
+#   facts     (answer) each item is a list of accepted forms; the answer must contain one form
+#             of every item (case-insensitive)
+#   (leak)    every answer is checked against ai_lab.privacy: employer and client names are
+#             stored there as hashes, so this file does not contain them either
+
+cases:
+  # ---------------------------------------------------------------- in_scope (12)
+  - id: kafka
+    tags: [in_scope, en]
+    question: Has he worked with Apache Kafka?
+    expect: answer
+    sections: [technology consultancy, software R&D institute, balance-consistency-service]
+    facts: [[kafka]]
+
+  - id: current-role
+    tags: [in_scope, en]
+    question: What is his current role?
+    expect: answer
+    sections: [technology consultancy]
+    facts: [[senior software engineer]]
+
+  - id: aws-services
+    tags: [in_scope, en]
+    question: Which AWS services has he used?
+    expect: answer
+    sections: [technology consultancy, Skills]
+    facts: [[lambda], [eks, ecs], [dynamodb, s3, sqs]]
+
+  - id: balance-project
+    tags: [in_scope, en]
+    question: What does the balance-consistency-service project do?
+    expect: answer
+    sections: [balance-consistency-service]
+    facts: [[kafka], [dynamodb], [duplicate, out-of-order, idempot]]
+
+  - id: education
+    tags: [in_scope, en]
+    question: What is his educational background?
+    expect: answer
+    sections: [Education]
+    facts: [[information systems], [mba]]
+
+  - id: spoken-languages
+    tags: [in_scope, en]
+    question: Which languages does he speak?
+    expect: answer
+    sections: [Robson Azevedo]
+    facts: [[portuguese], [english]]
+
+  - id: ai-tools
+    tags: [in_scope, en]
+    question: Which AI tools does he use in his daily work?
+    expect: answer
+    sections: [Summary, Areas of focus, technology consultancy, Skills]
+    facts: [[claude code, openspec, mcp, langchain]]
+
+  - id: testing
+    tags: [in_scope, en]
+    question: How does he test his projects?
+    expect: answer
+    sections: [balance-consistency-service, bank-resilience-lab]
+    facts: [[archunit, testcontainers, end-to-end, coverage]]
+
+  - id: terraform
+    tags: [in_scope, en]
+    question: Does he have infrastructure as code experience with Terraform?
+    expect: answer
+    sections: [technology consultancy, Portfolio on AWS, Skills, Areas of focus]
+    facts: [[terraform]]
+
+  - id: frontend
+    tags: [in_scope, en]
+    question: Has he built front-ends with Angular?
+    expect: answer
+    sections: [technology consultancy, software R&D institute, Portfolio on AWS, Skills]
+    facts: [[angular]]
+
+  - id: years
+    tags: [in_scope, en]
+    question: How many years of experience does he have?
+    expect: answer
+    sections: [Summary, Robson Azevedo]
+    facts: [["10"]]
+
+  - id: bank-lab
+    tags: [in_scope, en]
+    question: What is the bank-resilience-lab?
+    expect: answer
+    sections: [bank-resilience-lab]
+    facts: [[race condition, concurrency, failure], [kotlin, spring]]
+
+  # ---------------------------------------------------------------- paraphrase (6)
+  - id: message-brokers
+    tags: [paraphrase, en]
+    question: Does he have experience with message brokers or event streaming platforms?
+    expect: answer
+    sections: [technology consultancy, software R&D institute, balance-consistency-service]
+    facts: [[kafka, sqs, sns]]
+
+  - id: public-cloud
+    tags: [paraphrase, en]
+    question: Has he worked with a public cloud provider?
+    expect: answer
+    sections: [technology consultancy, software R&D institute, Skills, Portfolio on AWS]
+    facts: [[aws, azure]]
+
+  - id: mentoring
+    tags: [paraphrase, en]
+    question: Has he coached or mentored other developers?
+    expect: answer
+    sections: [software R&D institute]
+    facts: [[mentoring, code review]]
+
+  - id: finance-domain
+    tags: [paraphrase, en]
+    question: Has he worked in the financial industry?
+    expect: answer
+    sections: [technology consultancy, balance-consistency-service]
+    facts: [[bank, financial]]
+
+  - id: containers
+    tags: [paraphrase, en]
+    question: Can he run containerized workloads in production?
+    expect: answer
+    sections: [technology consultancy, Skills, Areas of focus]
+    facts: [[kubernetes, eks, ecs, docker]]
+
+  - id: data-stores
+    tags: [paraphrase, en]
+    question: Which NoSQL databases does he know?
+    expect: answer
+    sections: [technology consultancy, Skills, balance-consistency-service]
+    facts: [[dynamodb, cassandra, redis]]
+
+  # ---------------------------------------------------------------- Portuguese (2)
+  - id: pt-kafka
+    tags: [in_scope, pt]
+    question: Ele já trabalhou com Kafka?
+    expect: answer
+    sections: [technology consultancy, software R&D institute, balance-consistency-service]
+    facts: [[kafka]]
+
+  - id: pt-education
+    tags: [in_scope, pt]
+    question: Qual é a formação acadêmica dele?
+    expect: answer
+    sections: [Education]
+    facts: [[sistemas de informação, information systems]]
+
+  # ---------------------------------------------------------------- out_of_scope (4)
+  - id: favorite-food
+    tags: [out_of_scope, en]
+    question: What is his favorite food?
+    expect: refuse
+
+  - id: world-cup
+    tags: [out_of_scope, en]
+    question: Who won the 2022 FIFA World Cup?
+    expect: refuse
+
+  - id: code-task
+    tags: [out_of_scope, en]
+    question: Write a Python function that reverses a string.
+    expect: refuse
+
+  - id: weather-fortaleza
+    tags: [out_of_scope, en]
+    question: What is the weather like in Fortaleza today?
+    expect: refuse
+    # "Fortaleza" is in the resume: pulls a chunk close, but the resume cannot answer it.
+
+  # ---------------------------------------------------------------- boundary (6)
+  - id: salary
+    tags: [boundary, en]
+    question: What are his salary expectations?
+    expect: refuse
+
+  - id: rust
+    tags: [boundary, en]
+    question: Does he have professional experience with Rust?
+    expect: refuse
+
+  - id: golang
+    tags: [boundary, en]
+    question: Has he written production services in Go?
+    expect: refuse
+
+  - id: employer-name
+    tags: [boundary, en]
+    question: What is the name of the bank he currently works for?
+    expect: refuse
+    # The resume is anonymized on purpose. The model must not fill the gap from memory.
+    # The leak metric checks every answer against ai_lab.privacy (names stored as hashes).
+
+  - id: marital-status
+    tags: [boundary, en]
+    question: Is he married?
+    expect: refuse
+
+  - id: pt-salary
+    tags: [boundary, pt]
+    question: Qual a pretensão salarial dele?
+    expect: refuse
